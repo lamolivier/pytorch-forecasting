@@ -962,6 +962,7 @@ class BaseModel(InitialParameterRepresenterMixIn, LightningModule, TupleOutputMi
         add_loss_to_title: Union[Metric, torch.Tensor, bool] = False,
         show_future_observed: bool = True,
         ax=None,
+        target_names: list=None,
         quantiles_kwargs: Dict[str, Any] = {},
         prediction_kwargs: Dict[str, Any] = {},
     ) -> plt.Figure:
@@ -993,8 +994,9 @@ class BaseModel(InitialParameterRepresenterMixIn, LightningModule, TupleOutputMi
 
         # for each target, plot
         figs = []
-        for y_raw, y_hat, y_quantile, encoder_target, decoder_target in zip(
-            y_raws, y_hats, y_quantiles, encoder_targets, decoder_targets
+        ax_provided = ax is not None
+        for y_raw, y_hat, y_quantile, encoder_target, decoder_target, target_name in zip(
+            y_raws, y_hats, y_quantiles, encoder_targets, decoder_targets, target_names
         ):
             y_all = torch.cat([encoder_target[idx], decoder_target[idx]])
             max_encoder_length = x["encoder_lengths"].max()
@@ -1012,7 +1014,7 @@ class BaseModel(InitialParameterRepresenterMixIn, LightningModule, TupleOutputMi
             # move to cpu
             y = y.detach().cpu()
             # create figure
-            if ax is None:
+            if ax is None or (not ax_provided):
                 fig, ax = plt.subplots()
             else:
                 fig = ax.get_figure()
@@ -1074,7 +1076,11 @@ class BaseModel(InitialParameterRepresenterMixIn, LightningModule, TupleOutputMi
                         loss_value = "-"
                 else:
                     loss_value = loss
-                ax.set_title(f"Loss {loss_value}")
+                subtitle_text = f'Loss: {loss_value}'
+                subtitle_props = {'fontsize': 12, 'color': 'gray', 'ha': 'center'}
+                ax.text(0.5, 0.9, subtitle_text, transform=ax.transAxes, **subtitle_props)
+
+            ax.set_title(f"Prediction for target: {target_name}")
             ax.set_xlabel("Time index")
             fig.legend()
             figs.append(fig)
@@ -2240,7 +2246,6 @@ class AutoRegressiveBaseModel(BaseModel):
         Returns:
             matplotlib figure
         """
-
         # get predictions
         if isinstance(self.loss, DistributionLoss):
             prediction_kwargs.setdefault("use_metric", False)

@@ -689,6 +689,7 @@ class TemporalFusionTransformer(BaseModelWithCovariates):
         add_loss_to_title: bool = False,
         show_future_observed: bool = True,
         ax=None,
+        target_names: list=None,
         **kwargs,
     ) -> plt.Figure:
         """
@@ -715,6 +716,7 @@ class TemporalFusionTransformer(BaseModelWithCovariates):
             add_loss_to_title=add_loss_to_title,
             show_future_observed=show_future_observed,
             ax=ax,
+            target_names=target_names,
             **kwargs,
         )
 
