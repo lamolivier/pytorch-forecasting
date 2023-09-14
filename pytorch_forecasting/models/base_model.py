@@ -995,6 +995,7 @@ class BaseModel(InitialParameterRepresenterMixIn, LightningModule, TupleOutputMi
         # for each target, plot
         figs = []
         ax_provided = ax is not None
+        target_names = target_names if target_names is not None else [None for _ in range(len(y_raws))]
         for y_raw, y_hat, y_quantile, encoder_target, decoder_target, target_name in zip(
             y_raws, y_hats, y_quantiles, encoder_targets, decoder_targets, target_names
         ):
